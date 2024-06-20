@@ -1,21 +1,21 @@
 package database
 
-import "sync"
+import (
+	"rayhanadev/url-shortener/models"
 
-var (
-    urlStore = make(map[string]string)
-    mu       sync.RWMutex
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
-func SaveURL(slug, url string) {
-    mu.Lock()
-    defer mu.Unlock()
-    urlStore[slug] = url
-}
+var DB *gorm.DB
 
-func GetURL(slug string) (string, bool) {
-    mu.RLock()
-    defer mu.RUnlock()
-    url, found := urlStore[slug]
-    return url, found
+func InitDB() {
+    var err error
+    DB, err = gorm.Open(sqlite.Open("sqlite.db"), &gorm.Config{})
+    if err != nil {
+        panic("failed to connect database")
+    }
+
+    // Migrate the schema
+    DB.AutoMigrate(&models.User{}, &models.URL{})
 }
